@@ -48,14 +48,30 @@ namespace AuthService.Controllers
 
             var user = await _userService.FindUserByEmailAsync(dto.Email);
             if (user == null)
-                return Unauthorized("Данные не верны");
+                return Unauthorized("Данные не верны.");
 
             var isPasswordValid = await _userService.CheckPasswordAsync(user, dto.Password);
             if (!isPasswordValid)
-                return Unauthorized("Данные не верны");
+                return Unauthorized("Данные не верны.");
 
             var token = _jwtSetvice.GenerateToken(user);
             return Ok(new {Token = token});
+        }
+
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto dto)
+        {
+            var token = await _userService.GeneratePasswordResetTokenAsync(dto.Email);
+            
+            return token == null ? BadRequest("Пользователь не найден!") : Ok(new { Token = token });
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
+        {
+            var result = await _userService.ResetPasswordAsync(dto.Email, dto.Token, dto.NewPassword);
+
+            return result.Succeeded ? Ok(result) : BadRequest(result.Errors);
         }
     }
 }

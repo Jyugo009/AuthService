@@ -1,6 +1,20 @@
 @AuthService_HostAddress = http://localhost:5001
 
-GET {{AuthService_HostAddress}}/weatherforecast/
-Accept: application/json
+### Регистрация
+POST {{AuthService_HostAddress}}/api/auth/register
+Content-Type: application/json
 
-###
+{
+  "email": "test@example.com",
+  "password": "Qwerty123!",
+  "confirmPassword": "Qwerty123!"
+}
+
+### Логин
+POST {{AuthService_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "Qwerty123!"
+}
