@@ -41,7 +41,7 @@ namespace AuthService.Services
             return await _userManager.CheckPasswordAsync(user, password);
         }
 
-        public async Task<IdentityUser?> FindUserByEmailAsync(string email)
+        public async Task<IdentityUser?> GetUserByEmailAsync(string email)
         {
             return await _userManager.FindByEmailAsync(email);
         }

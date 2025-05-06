@@ -1,6 +1,5 @@
 ﻿using AuthService.Abstractions;
 using AuthService.Models.DTOs;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AuthService.Controllers
@@ -11,11 +10,13 @@ namespace AuthService.Controllers
     {
         private readonly IUserService _userService;
         private readonly IJwtService _jwtSetvice;
+        private readonly IEmailService _emailService;
 
-        public AuthController(IUserService userService, IJwtService jwtService)
+        public AuthController(IUserService userService, IJwtService jwtService, IEmailService emailService)
         {
             _userService = userService;
             _jwtSetvice = jwtService;
+            _emailService = emailService;
         }
 
         [HttpPost("register")]
@@ -46,7 +47,7 @@ namespace AuthService.Controllers
             if(!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var user = await _userService.FindUserByEmailAsync(dto.Email);
+            var user = await _userService.GetUserByEmailAsync(dto.Email);
             if (user == null)
                 return Unauthorized("Данные не верны.");
 
@@ -61,9 +62,19 @@ namespace AuthService.Controllers
         [HttpPost("forgot-password")]
         public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto dto)
         {
-            var token = await _userService.GeneratePasswordResetTokenAsync(dto.Email);
-            
-            return token == null ? BadRequest("Пользователь не найден!") : Ok(new { Token = token });
+            var user = await _userService.GetUserByEmailAsync(dto.Email);
+            if (user == null) return Ok();
+
+            var token = await _userService.GeneratePasswordResetTokenAsync(user.Email);
+            var request = HttpContext.Request;
+            var baseUrl = $"{request.Scheme}://{request.Host}";
+            var resetLink = $"{baseUrl}/api/auth/reset-password?token={token}&email={user.Email}";
+
+            await _emailService.SendPasswordResetEmailAsync(user.Email, resetLink);
+
+            return Ok();
+
+
         }
 
         [HttpPost("reset-password")]

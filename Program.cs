@@ -20,6 +20,7 @@ internal class Program
 
         builder.Services.AddScoped<IJwtService, JwtService>();
         builder.Services.AddScoped<IUserService, UserService>();
+        builder.Services.AddScoped<IEmailService, EmailService>();
 
         builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
         {
