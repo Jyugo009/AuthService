@@ -15,5 +15,8 @@ namespace AuthService.Models.DTOs
         [Required(ErrorMessage = "Поле не может быть пустым.")]
         [Compare("Password", ErrorMessage = "Пароли не совпадают.")]
         public string ConfirmPassword { get; set; }
+
+        [Required]
+        public string CallbackUrl { get; set; }
     }
 }

@@ -2,12 +2,13 @@
 
 namespace AuthService.Models.DTOs
 {
-    public class ForgotPasswordDto
+    public class ResendConfirmationDto
     {
-        [Required(ErrorMessage = "Пожалуйста, введите email-адрес.")]
-        [EmailAddress]
+        [Required, EmailAddress]
         public string Email { get; set; }
+
         [Required]
         public string CallbackUrl { get; set; }
+
     }
 }

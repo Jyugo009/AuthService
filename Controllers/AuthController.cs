@@ -38,7 +38,7 @@ namespace AuthService.Controllers
                 return BadRequest(result.Errors);
             }
 
-            return Ok(new { Message = "Пользователь зарегистрирован!" });
+            return Ok(new { Message = "Пользователь зарегистрирован! Проверьте email для подтверждения." });
         }
 
         [HttpPost("login")]
@@ -66,9 +66,7 @@ namespace AuthService.Controllers
             if (user == null) return Ok();
 
             var token = await _userService.GeneratePasswordResetTokenAsync(user.Email);
-            var request = HttpContext.Request;
-            var baseUrl = $"{request.Scheme}://{request.Host}";
-            var resetLink = $"{baseUrl}/api/auth/reset-password?token={token}&email={user.Email}";
+            var resetLink = $"{dto.CallbackUrl}?token={token}&email={user.Email}";
 
             await _emailService.SendPasswordResetEmailAsync(user.Email, resetLink);
 
@@ -82,6 +80,27 @@ namespace AuthService.Controllers
         {
             var result = await _userService.ResetPasswordAsync(dto.Email, dto.Token, dto.NewPassword);
 
+            return result.Succeeded ? Ok(result) : BadRequest(result.Errors);
+        }
+
+        [HttpPost("resend-confirmation")]
+        public async Task<IActionResult> ResendConfirmation([FromBody] ResendConfirmationDto dto)
+        {
+            var user = await _userService.GetUserByEmailAsync(dto.Email);
+            if (user == null) 
+                return Ok();
+
+            var token = await _userService.GenerateEmailConfirmationTokenAsync(user.Email);
+            var confirmationLink = $"{dto.CallbackUrl}?token={token}&email={user.Email}";
+
+            await _emailService.SendEmailConfirmationAsync(user.Email, confirmationLink);
+            return Ok();
+
+        }
+        [HttpPost("confirm-email")]
+        public async Task<IActionResult> ConfirmEmail([FromBody] ConfirmEmailDto dto)
+        {
+            var result = await _userService.ConfirmEmailAsync(dto.Email, dto.Token);
             return result.Succeeded ? Ok(result) : BadRequest(result.Errors);
         }
     }

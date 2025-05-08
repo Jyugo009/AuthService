@@ -10,7 +10,8 @@ namespace AuthService.Abstractions
         Task<bool> CheckPasswordAsync(IdentityUser user, string password);
         Task<string> GeneratePasswordResetTokenAsync(string email);
         Task<IdentityResult> ResetPasswordAsync(string email, string token, string newPassword);
-
+        Task<string> GenerateEmailConfirmationTokenAsync(string email);
+        Task<IdentityResult> ConfirmEmailAsync(string email, string token);
 
     }
 }
